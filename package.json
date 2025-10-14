@@ -2,6 +2,9 @@
 	"name": "@objectiveai/n8n-nodes",
 	"version": "0.1.0",
 	"description": "Objective AI integrations for n8n",
+	"publishConfig": {
+		"access": "public"
+	},
 	"keywords": [
 		"llm",
 		"ai",
