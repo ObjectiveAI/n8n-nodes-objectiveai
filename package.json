@@ -1,0 +1,74 @@
+{
+	"name": "@objectiveai/n8n-nodes",
+	"version": "0.1.0",
+	"description": "Objective AI integrations for n8n",
+	"keywords": [
+		"llm",
+		"ai",
+		"n8n",
+		"n8n-nodes",
+		"prompt",
+		"prompt engineering",
+		"machine learning",
+		"ml",
+		"objectiveai",
+		"objective ai",
+		"objective",
+		"confidence",
+		"confidence id",
+		"confidence score",
+		"n8n-community-node-package"
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/ObjectiveAI/n8n-nodes-objectiveai",
+	"author": {
+		"name": "Objective AI",
+		"email": "support@objective-ai.io",
+		"url": "https://objective-ai.io"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ObjectiveAI/n8n-nodes-objectiveai.git"
+	},
+	"engines": {
+		"node": ">=20.15"
+	},
+	"main": "index.js",
+	"scripts": {
+		"build": "npx rimraf dist && tsc && gulp build:icons",
+		"dev": "tsc --watch",
+		"format": "prettier nodes credentials --write",
+		"lint": "eslint nodes credentials package.json",
+		"lintfix": "eslint nodes credentials package.json --fix",
+		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+	},
+	"files": [
+		"dist"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/ObjectiveAiApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/llms/LmQueryObjectiveAi/LmQueryObjectiveAi.node.js"
+		]
+	},
+	"dependencies": {
+		"@objectiveai/langchain": "0.1.0",
+		"@n8n/n8n-nodes-langchain": "^1.115.0"
+	},
+	"devDependencies": {
+		"openai": "5.12.2",
+		"objectiveai": "1.0.0",
+		"@typescript-eslint/parser": "~8.32.0",
+		"eslint": "^8.57.0",
+		"eslint-plugin-n8n-nodes-base": "^1.16.3",
+		"gulp": "^5.0.0",
+		"prettier": "^3.5.3",
+		"typescript": "^5.8.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
+}
