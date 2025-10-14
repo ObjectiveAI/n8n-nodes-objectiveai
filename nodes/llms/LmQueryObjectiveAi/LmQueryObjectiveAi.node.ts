@@ -14,7 +14,7 @@ import { makeN8nLlmFailedAttemptHandler } from '@n8n/n8n-nodes-langchain/dist/no
 import { N8nLlmTracing } from '@n8n/n8n-nodes-langchain/dist/nodes/llms/N8nLlmTracing.js';
 import { Chat, JsonValue } from 'objectiveai';
 
-export class LmChatOpenRouter implements INodeType {
+export class LmQueryObjectiveAi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Objective AI Query Model',
 		name: 'lmQueryObjectiveAi',
