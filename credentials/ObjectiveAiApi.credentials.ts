@@ -10,7 +10,7 @@ export class ObjectiveAiApi implements ICredentialType {
 
 	displayName = 'Objective AI API';
 
-	documentationUrl = 'https://objective-ai.io/docs/n8n/credentials';
+	documentationUrl = 'https://objective-ai.io/docs';
 
 	properties: INodeProperties[] = [
 		{
