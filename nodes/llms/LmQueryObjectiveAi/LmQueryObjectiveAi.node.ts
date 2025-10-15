@@ -12,13 +12,13 @@ import { getConnectionHintNoticeField } from '@n8n/n8n-nodes-langchain/dist/util
 
 import { makeN8nLlmFailedAttemptHandler } from '@n8n/n8n-nodes-langchain/dist/nodes/llms/n8nLlmFailedAttemptHandler.js';
 import { N8nLlmTracing } from '@n8n/n8n-nodes-langchain/dist/nodes/llms/N8nLlmTracing.js';
-import { Chat, JsonValue } from 'objectiveai';
+import { Chat } from 'objectiveai';
 
 export class LmQueryObjectiveAi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Objective AI Query Model',
 		name: 'lmQueryObjectiveAi',
-		icon: { light: 'file:objectiveai.svg', dark: 'file:objectiveai.dark.svg' },
+		icon: { light: 'file:../../objectiveai.svg', dark: 'file:../../objectiveai.dark.svg' },
 		group: ['transform'],
 		version: [1],
 		description: 'For advanced usage with an AI chain',
@@ -34,7 +34,7 @@ export class LmQueryObjectiveAi implements INodeType {
 			resources: {
 				primaryDocumentation: [
 					{
-						url: 'https://objective-ai.io/docs/n8n/query',
+						url: 'https://objective-ai.io/docs',
 					},
 				],
 			},
@@ -59,11 +59,11 @@ export class LmQueryObjectiveAi implements INodeType {
 			{
 				displayName: 'Model',
 				description:
-					'The query model which will generate the completion. <a href="https://objective-ai.io/docs/query_models">Learn more</a>.',
+					'The query model which will generate the completion. <a href="https://objective-ai.io/docs">Learn more</a>.',
 				name: 'model',
 				type: 'options',
 				required: true,
-				default: undefined,
+				default: null,
 				typeOptions: {
 					loadOptions: {
 						routing: {
@@ -103,7 +103,7 @@ export class LmQueryObjectiveAi implements INodeType {
 				description: 'Maximum number of retries to attempt',
 				name: 'maxRetries',
 				type: 'number',
-				typeOptions: { minValue: 0, numberPrecision: 1 },
+				typeOptions: { minValue: 0, numberPrecision: 0 },
 				required: true,
 				default: 2,
 			},
@@ -112,7 +112,7 @@ export class LmQueryObjectiveAi implements INodeType {
 				description: 'How many choices each LLM within the Query Model should generate',
 				name: 'n',
 				type: 'number',
-				typeOptions: { minValue: 1, numberPrecision: 1 },
+				typeOptions: { minValue: 1, numberPrecision: 0 },
 				required: true,
 				default: 1,
 			},
@@ -120,6 +120,7 @@ export class LmQueryObjectiveAi implements INodeType {
 				displayName: 'Response Format',
 				name: 'responseFormat',
 				type: 'options',
+				required: true,
 				default: 'text',
 				options: [
 					{
@@ -157,7 +158,7 @@ export class LmQueryObjectiveAi implements INodeType {
 				description: 'The description of the Response Format schema',
 				name: 'responseFormatJsonSchemaDescription',
 				type: 'string',
-				default: undefined,
+				default: '', // empty string instead of null to satisfy the linter
 				displayOptions: {
 					show: {
 						responseFormat: ['json_schema'],
@@ -171,12 +172,16 @@ export class LmQueryObjectiveAi implements INodeType {
 				name: 'responseFormatJsonSchema',
 				type: 'json',
 				required: true,
-				default: {
-					type: 'object',
-					properties: { response: { type: 'string' } },
-					required: ['response'],
-					additionalProperties: false,
-				},
+				default: `{
+	"type": "object",
+	"properties": {
+			"response": {
+					"type": "string"
+			}
+	},
+	"required": ["response"],
+	"additionalProperties": false
+}`,
 				displayOptions: {
 					show: {
 						responseFormat: ['json_schema'],
@@ -189,7 +194,7 @@ export class LmQueryObjectiveAi implements INodeType {
 				name: 'seed',
 				type: 'number',
 				typeOptions: { minValue: 0, numberPrecision: 1 },
-				default: undefined,
+				default: null,
 			},
 			{
 				displayName: 'Timeout',
@@ -204,37 +209,44 @@ export class LmQueryObjectiveAi implements INodeType {
 	};
 
 	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
+		// get credentials
 		const credentials = await this.getCredentials('objectiveAiApi');
 
-		const modelName = this.getNodeParameter('model', itemIndex) as string;
+		// get user-defined parameters
+		const modelParam = this.getNodeParameter('model', itemIndex) as string;
+		const maxRetriesParam = this.getNodeParameter('maxRetries', itemIndex) as number;
+		const nParam = this.getNodeParameter('n', itemIndex) as number;
+		const responseFormatParam = this.getNodeParameter('responseFormat', itemIndex) as string;
+		const responseFormatJsonSchemaNameParam = this.getNodeParameter(
+			'responseFormatJsonSchemaName',
+			itemIndex,
+		) as string;
+		const responseFormatJsonSchemaDescriptionParam = this.getNodeParameter(
+			'responseFormatJsonSchemaDescription',
+			itemIndex,
+		) as string | null;
+		const responseFormatJsonSchemaParam = this.getNodeParameter(
+			'responseFormatJsonSchema',
+			itemIndex,
+		) as string;
+		const seedParam = this.getNodeParameter('seed', itemIndex) as number | null;
+		const timeoutParam = this.getNodeParameter('timeout', itemIndex) as number;
 
-		const options = this.getNodeParameter('options', itemIndex, {}) as {
-			responseFormat?: 'text' | 'json_object' | 'json_schema';
-			responseFormatJsonSchemaName?: string;
-			responseFormatJsonSchemaDescription?: string;
-			responseFormatJsonSchema?: Record<string, JsonValue>;
-			n?: number;
-			seed?: number;
-			timeout?: number;
-			maxRetries?: number;
-		};
-
+		// build response format
 		const responseFormat: Chat.Completions.Request.ResponseFormat = (() => {
-			if (options.responseFormat === 'json_object') {
+			if (responseFormatParam === 'json_object') {
 				return { type: 'json_object' };
-			} else if (options.responseFormat === 'json_schema') {
+			} else if (responseFormatParam === 'json_schema') {
 				return {
 					type: 'json_schema',
 					json_schema: {
-						name: options.responseFormatJsonSchemaName ?? 'Response',
-						description: options.responseFormatJsonSchemaDescription,
+						name: responseFormatJsonSchemaNameParam,
+						description:
+							responseFormatJsonSchemaDescriptionParam === ''
+								? undefined
+								: responseFormatJsonSchemaDescriptionParam,
 						strict: true,
-						schema: options.responseFormatJsonSchema ?? {
-							type: 'object',
-							properties: { response: { type: 'string' } },
-							required: ['response'],
-							additionalProperties: false,
-						},
+						schema: JSON.parse(responseFormatJsonSchemaParam),
 					},
 				};
 			} else {
@@ -242,14 +254,15 @@ export class LmQueryObjectiveAi implements INodeType {
 			}
 		})();
 
+		// build model
 		const model = new QueryObjectiveAI({
-			maxRetries: options.maxRetries ?? 2,
+			maxRetries: maxRetriesParam,
 			callbacks: [new N8nLlmTracing(this)],
 			onFailedAttempt: makeN8nLlmFailedAttemptHandler(this),
 			chat_completion_create_params: {
-				model: modelName,
-				n: options.n ?? 1,
-				seed: options.seed,
+				model: modelParam,
+				n: nParam,
+				seed: seedParam,
 				response_format: responseFormat,
 			},
 			openai: {
@@ -258,10 +271,11 @@ export class LmQueryObjectiveAi implements INodeType {
 				fetchOptions: {
 					dispatcher: getProxyAgent(credentials.url as string),
 				},
-				timeout: options.timeout ?? 300_000, // 5 minutes
+				timeout: timeoutParam,
 			},
 		});
 
+		// return model
 		return {
 			response: model,
 		};
