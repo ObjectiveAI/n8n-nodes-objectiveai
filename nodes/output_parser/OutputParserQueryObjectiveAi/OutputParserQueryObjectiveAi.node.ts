@@ -17,7 +17,7 @@ import { N8nStructuredOutputParser } from '@n8n/n8n-nodes-langchain/dist/utils/o
 import { getConnectionHintNoticeField } from '@n8n/n8n-nodes-langchain/dist/utils/sharedFields.js';
 import { convertJsonSchemaToZod } from '@n8n/n8n-nodes-langchain/dist/utils/schemaParsing.js';
 
-export class OutputParserObjectiveAi implements INodeType {
+export class OutputParserQueryObjectiveAi implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Objective AI Query Output Parser',
 		name: 'outputParserQueryObjectiveAi',
