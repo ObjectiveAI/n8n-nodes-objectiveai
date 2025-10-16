@@ -1,4 +1,3 @@
-import { QueryObjectiveAI } from '@objectiveai/langchain';
 import {
 	NodeConnectionTypes,
 	type INodeType,
@@ -6,13 +5,12 @@ import {
 	type ISupplyDataFunctions,
 	type SupplyData,
 } from 'n8n-workflow';
-
-import { getProxyAgent } from '@n8n/n8n-nodes-langchain/dist/utils/httpProxyAgent.js';
-import { getConnectionHintNoticeField } from '@n8n/n8n-nodes-langchain/dist/utils/sharedFields.js';
-
-import { makeN8nLlmFailedAttemptHandler } from '@n8n/n8n-nodes-langchain/dist/nodes/llms/n8nLlmFailedAttemptHandler.js';
-import { N8nLlmTracing } from '@n8n/n8n-nodes-langchain/dist/nodes/llms/N8nLlmTracing.js';
+import { QueryObjectiveAI } from '@objectiveai/langchain';
 import { Chat } from 'objectiveai';
+import { makeN8nLlmFailedAttemptHandler } from '@n8n/n8n-nodes-langchain/dist/nodes/llms/n8nLlmFailedAttemptHandler.js';
+import { getConnectionHintNoticeField } from '@n8n/n8n-nodes-langchain/dist/utils/sharedFields.js';
+import { N8nLlmTracing } from '@n8n/n8n-nodes-langchain/dist/nodes/llms/N8nLlmTracing.js';
+import { getProxyAgent } from '@n8n/n8n-nodes-langchain/dist/utils/httpProxyAgent.js';
 
 export class LmQueryObjectiveAi implements INodeType {
 	description: INodeTypeDescription = {

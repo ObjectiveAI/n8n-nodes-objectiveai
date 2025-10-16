@@ -4,8 +4,8 @@ declare module '@n8n/n8n-nodes-langchain/dist/utils/httpProxyAgent.js' {
 }
 
 declare module '@n8n/n8n-nodes-langchain/dist/utils/sharedFields.js' {
-	import { NodeConnectionTypes } from 'n8n-workflow';
 	import type { INodeProperties } from 'n8n-workflow';
+	import { NodeConnectionTypes } from 'n8n-workflow';
 	export function getConnectionHintNoticeField(
 		connectionTypes: (
 			| typeof NodeConnectionTypes.AiAgent
@@ -27,10 +27,10 @@ declare module '@n8n/n8n-nodes-langchain/dist/nodes/llms/n8nLlmFailedAttemptHand
 }
 
 declare module '@n8n/n8n-nodes-langchain/dist/nodes/llms/N8nLlmTracing.js' {
-	import { BaseCallbackHandler } from '@langchain/core/dist/callbacks/base';
-	import { NodeError } from 'n8n-workflow';
 	import type { LLMResult } from '@langchain/core/dist/outputs';
 	import type { ISupplyDataFunctions } from 'n8n-workflow';
+	import { BaseCallbackHandler } from '@langchain/core/dist/callbacks/base';
+	import { NodeError } from 'n8n-workflow';
 	export type TokensUsageParser = (result: LLMResult) => {
 		completionTokens: number;
 		promptTokens: number;
@@ -45,4 +45,33 @@ declare module '@n8n/n8n-nodes-langchain/dist/nodes/llms/N8nLlmTracing.js' {
 			},
 		);
 	}
+}
+
+declare module '@n8n/n8n-nodes-langchain/dist/utils/output_parsers/N8nStructuredOutputParser.js' {
+	import type { ISupplyDataFunctions } from 'n8n-workflow';
+	import type { Callbacks } from '@langchain/core/callbacks/manager';
+	import { z } from 'zod';
+	export class N8nStructuredOutputParser extends StructuredOutputParser<
+		z.ZodType<object, z.ZodTypeDef, object>
+	> {
+		constructor(context: ISupplyDataFunctions, zodSchema: z.ZodSchema<object>);
+		parse(
+			text: string,
+			_callbacks?: Callbacks,
+			errorMapper?: (error: Error) => Error,
+		): Promise<object>;
+		static fromZodJsonSchema(
+			zodSchema: z.ZodSchema<object, z.ZodTypeDef, object>,
+			nodeVersion: number,
+			context: ISupplyDataFunctions,
+		): Promise<N8nStructuredOutputParser>;
+	}
+}
+
+declare module '@n8n/n8n-nodes-langchain/dist/utils/schemaParsing.js' {
+	import type { JSONSchema7 } from 'json-schema';
+	import { z } from 'zod';
+	export function convertJsonSchemaToZod<T extends z.ZodTypeAny = z.ZodTypeAny>(
+		schema: JSONSchema7,
+	): T;
 }
