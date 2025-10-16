@@ -215,18 +215,6 @@ export class LmQueryObjectiveAi implements INodeType {
 		const maxRetriesParam = this.getNodeParameter('maxRetries', itemIndex) as number;
 		const nParam = this.getNodeParameter('n', itemIndex) as number;
 		const responseFormatParam = this.getNodeParameter('responseFormat', itemIndex) as string;
-		const responseFormatJsonSchemaNameParam = this.getNodeParameter(
-			'responseFormatJsonSchemaName',
-			itemIndex,
-		) as string;
-		const responseFormatJsonSchemaDescriptionParam = this.getNodeParameter(
-			'responseFormatJsonSchemaDescription',
-			itemIndex,
-		) as string | null;
-		const responseFormatJsonSchemaParam = this.getNodeParameter(
-			'responseFormatJsonSchema',
-			itemIndex,
-		) as string;
 		const seedParam = this.getNodeParameter('seed', itemIndex) as number | null;
 		const timeoutParam = this.getNodeParameter('timeout', itemIndex) as number;
 
@@ -235,6 +223,18 @@ export class LmQueryObjectiveAi implements INodeType {
 			if (responseFormatParam === 'json_object') {
 				return { type: 'json_object' };
 			} else if (responseFormatParam === 'json_schema') {
+				const responseFormatJsonSchemaNameParam = this.getNodeParameter(
+					'responseFormatJsonSchemaName',
+					itemIndex,
+				) as string;
+				const responseFormatJsonSchemaDescriptionParam = this.getNodeParameter(
+					'responseFormatJsonSchemaDescription',
+					itemIndex,
+				) as string | null;
+				const responseFormatJsonSchemaParam = this.getNodeParameter(
+					'responseFormatJsonSchema',
+					itemIndex,
+				) as string;
 				return {
 					type: 'json_schema',
 					json_schema: {
