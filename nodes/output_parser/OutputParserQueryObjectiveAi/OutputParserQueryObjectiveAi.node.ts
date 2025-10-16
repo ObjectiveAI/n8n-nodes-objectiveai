@@ -28,7 +28,6 @@ export class OutputParserQueryObjectiveAi implements INodeType {
 		defaults: {
 			name: 'Objective AI Query Output Parser',
 		},
-
 		codex: {
 			categories: ['AI'],
 			subcategories: {
@@ -42,10 +41,14 @@ export class OutputParserQueryObjectiveAi implements INodeType {
 				],
 			},
 		},
-
-		inputs: [NodeConnectionTypes.AiLanguageModel],
-		inputNames: ['Model'],
-
+		inputs: [
+			{
+				displayName: 'Model',
+				maxConnections: 1,
+				type: NodeConnectionTypes.AiLanguageModel,
+				required: true,
+			},
+		],
 		outputs: [NodeConnectionTypes.AiOutputParser],
 		outputNames: ['Output Parser'],
 		properties: [
@@ -65,27 +68,17 @@ export class OutputParserQueryObjectiveAi implements INodeType {
 		if (responseFormat?.type === 'json_schema' && responseFormat.json_schema.schema) {
 			const jsonSchema = responseFormat.json_schema.schema as JSONSchema7;
 			const zodSchema = convertJsonSchemaToZod(jsonSchema);
-			const nodeVersion = this.getNode().typeVersion;
-			const n8nParser = await N8nStructuredOutputParser.fromZodJsonSchema(
-				zodSchema,
-				nodeVersion,
-				this,
-			);
+			const n8nParser = await N8nStructuredOutputParser.fromZodJsonSchema(zodSchema, 1.3, this);
 			const outputParser = new QueryObjectiveAICustomOutputParser(
-				(text: string) => n8nParser.parse(text),
+				(text: string) => n8nParserParse(n8nParser, text),
 				zodSchema,
 			);
 			return { response: outputParser };
 		} else if (responseFormat?.type === 'json_object') {
 			const zodSchema = z.record(z.unknown());
-			const nodeVersion = this.getNode().typeVersion;
-			const n8nParser = await N8nStructuredOutputParser.fromZodJsonSchema(
-				zodSchema,
-				nodeVersion,
-				this,
-			);
+			const n8nParser = await N8nStructuredOutputParser.fromZodJsonSchema(zodSchema, 1.3, this);
 			const outputParser = new QueryObjectiveAICustomOutputParser(
-				(text: string) => n8nParser.parse(text),
+				(text: string) => n8nParserParse(n8nParser, text),
 				zodSchema,
 			);
 			return { response: outputParser };
@@ -93,5 +86,23 @@ export class OutputParserQueryObjectiveAi implements INodeType {
 			const outputParser = new QueryObjectiveAITextOutputParser();
 			return { response: outputParser };
 		}
+	}
+}
+
+async function n8nParserParse(
+	n8nParser: N8nStructuredOutputParser,
+	text: string,
+): Promise<unknown> {
+	let input: string;
+	try {
+		input = JSON.stringify({ output: JSON.parse(text) });
+	} catch {
+		input = text;
+	}
+	const parsed = await n8nParser.parse(input);
+	if (typeof parsed === 'object' && parsed !== null && 'output' in parsed) {
+		return parsed.output;
+	} else {
+		return parsed;
 	}
 }

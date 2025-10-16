@@ -1,6 +1,6 @@
 {
 	"name": "@objectiveai/n8n-nodes",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Objective AI integrations for n8n",
 	"publishConfig": {
 		"access": "public"
@@ -58,7 +58,7 @@
 		]
 	},
 	"dependencies": {
-		"@objectiveai/langchain": "0.1.2"
+		"@objectiveai/langchain": "0.1.3"
 	},
 	"devDependencies": {
 		"openai": "5.12.2",
