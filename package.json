@@ -1,6 +1,6 @@
 {
 	"name": "@objectiveai/n8n-nodes",
-	"version": "0.1.2",
+	"version": "0.1.3",
 	"description": "Objective AI integrations for n8n",
 	"publishConfig": {
 		"access": "public"
@@ -62,7 +62,7 @@
 	},
 	"devDependencies": {
 		"openai": "5.12.2",
-		"objectiveai": "1.0.0",
+		"objectiveai": "1.0.2",
 		"@typescript-eslint/parser": "~8.32.0",
 		"eslint": "^8.57.0",
 		"eslint-plugin-n8n-nodes-base": "^1.16.3",
