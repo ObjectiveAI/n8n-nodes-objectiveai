@@ -187,6 +187,18 @@ export class LmQueryObjectiveAi implements INodeType {
 				},
 			},
 			{
+				displayName: 'Select Deterministic',
+				description: 'Whether to generate a choice for each possible output allowed by the schema',
+				name: 'selectDeterministic',
+				type: 'boolean',
+				default: false,
+				displayOptions: {
+					show: {
+						responseFormat: ['json_schema'],
+					},
+				},
+			},
+			{
 				displayName: 'Seed',
 				description: 'A seed value to make the output of the model more deterministic',
 				name: 'seed',
@@ -219,9 +231,12 @@ export class LmQueryObjectiveAi implements INodeType {
 		const timeoutParam = this.getNodeParameter('timeout', itemIndex) as number;
 
 		// build response format
-		const responseFormat: Chat.Completions.Request.ResponseFormat = (() => {
+		const [responseFormat, selectDeterministic]: [
+			Chat.Completions.Request.ResponseFormat,
+			boolean,
+		] = (() => {
 			if (responseFormatParam === 'json_object') {
-				return { type: 'json_object' };
+				return [{ type: 'json_object' }, false];
 			} else if (responseFormatParam === 'json_schema') {
 				const responseFormatJsonSchemaNameParam = this.getNodeParameter(
 					'responseFormatJsonSchemaName',
@@ -235,20 +250,23 @@ export class LmQueryObjectiveAi implements INodeType {
 					'responseFormatJsonSchema',
 					itemIndex,
 				) as string;
-				return {
-					type: 'json_schema',
-					json_schema: {
-						name: responseFormatJsonSchemaNameParam,
-						description:
-							responseFormatJsonSchemaDescriptionParam === ''
-								? undefined
-								: responseFormatJsonSchemaDescriptionParam,
-						strict: true,
-						schema: JSON.parse(responseFormatJsonSchemaParam),
+				return [
+					{
+						type: 'json_schema',
+						json_schema: {
+							name: responseFormatJsonSchemaNameParam,
+							description:
+								responseFormatJsonSchemaDescriptionParam === ''
+									? undefined
+									: responseFormatJsonSchemaDescriptionParam,
+							strict: true,
+							schema: JSON.parse(responseFormatJsonSchemaParam),
+						},
 					},
-				};
+					this.getNodeParameter('selectDeterministic', itemIndex) as boolean,
+				];
 			} else {
-				return { type: 'text' };
+				return [{ type: 'text' }, false];
 			}
 		})();
 
@@ -262,6 +280,7 @@ export class LmQueryObjectiveAi implements INodeType {
 				n: nParam,
 				seed: seedParam,
 				response_format: responseFormat,
+				select_deterministic: selectDeterministic,
 			},
 			openai: {
 				apiKey: credentials.apiKey as string,
